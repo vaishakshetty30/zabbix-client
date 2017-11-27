@@ -50,7 +50,7 @@ const (
 // https://www.zabbix.com/documentation/2.2/manual/appendix/api/item/definitions
 type Item struct {
 	ItemId       string    `json:"itemid,omitempty"`
-	Delay        int       `json:"delay"`
+	Delay        string    `json:"delay"`
 	HostId       string    `json:"hostid"`
 	InterfaceId  string    `json:"interfaceid,omitempty"`
 	Key          string    `json:"key_"`
@@ -65,7 +65,6 @@ type Item struct {
 	Trends       string    `json:"trends,omitempty"`
 	TrapperHosts string    `json:"trapper_hosts,omitempty"`
 
-	// Fields below used only when creating applications
 	ApplicationIds []string `json:"applications,omitempty"`
 }
 
@@ -115,6 +114,12 @@ func (api *API) ItemsCreate(items Items) (err error) {
 	for i, id := range itemids {
 		items[i].ItemId = id.(string)
 	}
+	return
+}
+
+// Wrapper for item.update: https://www.zabbix.com/documentation/2.2/manual/appendix/api/item/update
+func (api *API) ItemsUpdate(items Items) (err error) {
+	_, err = api.CallWithError("item.update", items)
 	return
 }
 

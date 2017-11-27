@@ -2,11 +2,13 @@ package zabbix
 
 import (
 	"github.com/AlekSi/reflector"
+	"reflect"
 )
 
 type (
 	AvailableType int
 	StatusType    int
+	InventoryType int
 )
 
 const (
@@ -15,6 +17,10 @@ const (
 
 	Monitored   StatusType = 0
 	Unmonitored StatusType = 1
+
+	InventoryDisabled  InventoryType = -1
+	InventoryManual    InventoryType = 0
+	InventoryAutomatic InventoryType = 1
 )
 
 // https://www.zabbix.com/documentation/2.2/manual/appendix/api/host/definitions
@@ -25,6 +31,9 @@ type Host struct {
 	Error     string        `json:"error"`
 	Name      string        `json:"name"`
 	Status    StatusType    `json:"status"`
+
+	InventoryMode InventoryType     `json:"inventory_mode"`
+	Inventory     map[string]string `json:"inventory"`
 
 	// Fields below used only when creating hosts
 	GroupIds   HostGroupIds   `json:"groups,omitempty"`
@@ -44,6 +53,20 @@ func (api *API) HostsGet(params Params) (res Hosts, err error) {
 	}
 
 	reflector.MapsToStructs2(response.Result.([]interface{}), &res, reflector.Strconv, "json")
+
+	if _, ok := params["selectInventory"]; ok {
+		results := response.Result.([]interface{})
+		for i, _ := range results {
+			host := results[i].(map[string]interface{})
+			if reflect.TypeOf(host["inventory"]).Kind() == reflect.Map {
+				inventory := host["inventory"].(map[string]interface{})
+				res[i].Inventory = make(map[string]string, len(inventory))
+				for key, value := range inventory {
+					res[i].Inventory[key] = value.(string)
+				}
+			}
+		}
+	}
 	return
 }
 
@@ -105,6 +128,12 @@ func (api *API) HostsCreate(hosts Hosts) (err error) {
 	for i, id := range hostids {
 		hosts[i].HostId = id.(string)
 	}
+	return
+}
+
+// Wrapper for host.update: https://www.zabbix.com/documentation/2.2/manual/appendix/api/host/update
+func (api *API) HostsUpdate(hosts Hosts) (err error) {
+	_, err = api.CallWithError("host.update", hosts)
 	return
 }
 

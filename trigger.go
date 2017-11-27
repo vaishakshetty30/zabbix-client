@@ -68,6 +68,12 @@ func (api *API) TriggersCreate(triggers Triggers) (err error) {
 	return
 }
 
+// Wrapper for item.update: https://www.zabbix.com/documentation/2.2/manual/appendix/api/item/update
+func (api *API) TriggersUpdate(triggers Triggers) (err error) {
+	_, err = api.CallWithError("trigger.update", triggers)
+	return
+}
+
 // Wrapper for item.delete: https://www.zabbix.com/documentation/2.2/manual/appendix/api/item/delete
 // Cleans ItemId in all items elements if call succeed.
 func (api *API) TriggersDelete(triggers Triggers) (err error) {
