@@ -1,8 +1,9 @@
 package zabbix
 
 import (
-	"github.com/AlekSi/reflector"
 	"reflect"
+
+	"github.com/vaishakshetty30/reflector"
 )
 
 type (
