@@ -39,6 +39,7 @@ type Host struct {
 	// Fields below used only when creating hosts
 	GroupIds   HostGroupIds   `json:"groups,omitempty"`
 	Interfaces HostInterfaces `json:"interfaces,omitempty"`
+	Tags       Tags           `json:"tags,omitempty"`
 }
 
 type Hosts []Host
@@ -57,7 +58,7 @@ func (api *API) HostsGet(params Params) (res Hosts, err error) {
 
 	if _, ok := params["selectInventory"]; ok {
 		results := response.Result.([]interface{})
-		for i, _ := range results {
+		for i := range results {
 			host := results[i].(map[string]interface{})
 			if reflect.TypeOf(host["inventory"]).Kind() == reflect.Map {
 				inventory := host["inventory"].(map[string]interface{})
@@ -68,6 +69,22 @@ func (api *API) HostsGet(params Params) (res Hosts, err error) {
 			}
 		}
 	}
+
+	if _, ok := params["selectTags"]; ok {
+		results := response.Result.([]interface{})
+		for i := range results {
+			host := results[i].(map[string]interface{})
+			tags := host["tags"].([]interface{})
+			for i := range tags {
+				tag := tags[i].(map[string]interface{})
+				res[i].Tags = append(res[i].Tags, Tag{
+					Tag:   tag["tag"].(string),
+					Value: tag["value"].(string),
+				})
+			}
+		}
+	}
+
 	return
 }
 
@@ -118,10 +135,10 @@ func (api *API) HostGetByHost(host string) (res *Host, err error) {
 }
 
 // Wrapper for host.create: https://www.zabbix.com/documentation/2.2/manual/appendix/api/host/create
-func (api *API) HostsCreate(hosts Hosts) (err error) {
+func (api *API) HostsCreate(hosts Hosts) (res *Hosts, err error) {
 	response, err := api.CallWithError("host.create", hosts)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	result := response.Result.(map[string]interface{})
@@ -129,7 +146,7 @@ func (api *API) HostsCreate(hosts Hosts) (err error) {
 	for i, id := range hostids {
 		hosts[i].HostId = id.(string)
 	}
-	return
+	return &hosts, nil
 }
 
 // Wrapper for host.update: https://www.zabbix.com/documentation/2.2/manual/appendix/api/host/update

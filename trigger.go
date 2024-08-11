@@ -31,7 +31,7 @@ type Trigger struct {
 	Expression  string `json:"expression"`
 	Comments    string `json:"comments"`
 	//TemplateId  string    `json:"templateid"`
-	Value ValueType `json:""`
+	// Value ValueType `json:"value"`
 
 	Priority PriorityType `json:"priority"`
 	Status   StatusType   `json:"status"`
