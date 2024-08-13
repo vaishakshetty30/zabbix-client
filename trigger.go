@@ -7,6 +7,7 @@ import (
 
 type (
 	PriorityType int
+	CloseType    int
 )
 
 const (
@@ -22,6 +23,9 @@ const (
 
 	OK      ValueType = 0
 	Problem ValueType = 1
+
+	No  CloseType = 0
+	Yes CloseType = 1
 )
 
 // https://www.zabbix.com/documentation/2.2/manual/appendix/api/item/definitions
@@ -33,8 +37,9 @@ type Trigger struct {
 	//TemplateId  string    `json:"templateid"`
 	// Value ValueType `json:"value"`
 
-	Priority PriorityType `json:"priority"`
-	Status   StatusType   `json:"status"`
+	Priority    PriorityType `json:"priority"`
+	Status      StatusType   `json:"status"`
+	ManualClose CloseType    `json:"manual_close"`
 }
 
 type Triggers []Trigger
